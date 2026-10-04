@@ -3,15 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Website</title>
+    <title>Diego Lainfiesta - Executive Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #network-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+        }
+        .hero-section {
+            position: relative;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            overflow: hidden;
+            border-bottom: 1px solid #bcccdc;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+        .btn-toggle {
+            transition: all 0.3s ease;
+        }
+    </style>
+    <script>
+        function toggleLanguage(lang) {
+            document.querySelectorAll('.lang-en').forEach(el => el.style.display = lang === 'en' ? 'block' : 'none');
+            document.querySelectorAll('.lang-es').forEach(el => el.style.display = lang === 'es' ? 'block' : 'none');
+            document.querySelectorAll('.lang-en-inline').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+            document.querySelectorAll('.lang-es-inline').forEach(el => el.style.display = lang === 'es' ? 'inline' : 'none');
+            
+            const btnEn = document.getElementById('btn-en');
+            const btnEs = document.getElementById('btn-es');
+            
+            if(lang === 'en') {
+                btnEn.classList.add('bg-blue-700', 'text-white', 'shadow-md');
+                btnEn.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-100');
+                btnEs.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-100');
+                btnEs.classList.remove('bg-blue-700', 'text-white', 'shadow-md');
+            } else {
+                btnEs.classList.add('bg-blue-700', 'text-white', 'shadow-md');
+                btnEs.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-100');
+                btnEn.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-100');
+                btnEn.classList.remove('bg-blue-700', 'text-white', 'shadow-md');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            toggleLanguage('en');
+            initCanvas();
+        });
+
+        // Data Analytics / Supply Chain Network Animation
+        function initCanvas() {
+            const canvas = document.getElementById('network-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            
+            function resize() {
+                width = canvas.width = canvas.parentElement.offsetWidth;
+                height = canvas.height = canvas.parentElement.offsetHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const nodes = [];
+            // Increase nodes for wider screens
+            const numNodes = window.innerWidth > 768 ? 60 : 30;
+
+            for(let i=0; i<numNodes; i++) {
+                nodes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.7,
+                    vy: (Math.random() - 0.5) * 0.7,
+                    radius: Math.random() * 3 + 2,
+                    isHub: Math.random() > 0.9 // Create a few "hub" nodes (e.g. warehouses)
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw edges (supply chain links)
+                for(let i=0; i<numNodes; i++) {
+                    for(let j=i+1; j<numNodes; j++) {
+                        const dx = nodes[i].x - nodes[j].x;
+                        const dy = nodes[i].y - nodes[j].y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        // Connect if close enough, connect further if one is a hub
+                        const maxDist = (nodes[i].isHub || nodes[j].isHub) ? 200 : 120;
+                        
+                        if(dist < maxDist) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.strokeStyle = `rgba(37, 99, 235, ${0.4 * (1 - dist/maxDist)})`; // Blue-600
+                            ctx.lineWidth = (nodes[i].isHub && nodes[j].isHub) ? 2 : 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw nodes (facilities/data points)
+                for(let i=0; i<numNodes; i++) {
+                    const node = nodes[i];
+                    node.x += node.vx;
+                    node.y += node.vy;
+                    
+                    if(node.x < 0 || node.x > width) node.vx *= -1;
+                    if(node.y < 0 || node.y > height) node.vy *= -1;
+                    
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.isHub ? node.radius * 2 : node.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = node.isHub ? '#1e40af' : '#3b82f6'; // Blue-800 for hubs, Blue-500 for normal
+                    ctx.fill();
+                    
+                    // Pulse effect for hubs
+                    if(node.isHub) {
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, node.radius * 4, 0, Math.PI * 2);
+                        ctx.strokeStyle = 'rgba(30, 64, 175, 0.1)';
+                        ctx.stroke();
+                    }
+                }
+                
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+    </script>
 </head>
-<body class="bg-gray-100 font-sans text-gray-900">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-            <h1 class="text-3xl font-bold text-center mb-4">Welcome</h1>
-            <p class="text-gray-600 text-center">My personal website is under construction.</p>
+<body class="bg-white font-sans text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900">
+
+    <!-- Navigation & Language Toggle -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="font-extrabold text-2xl tracking-tight text-blue-900 uppercase">Diego Lainfiesta</div>
+            <div class="flex p-1 bg-slate-100 rounded-lg">
+                <button id="btn-en" onclick="toggleLanguage('en')" class="btn-toggle px-4 py-1.5 rounded-md text-sm font-bold">EN</button>
+                <button id="btn-es" onclick="toggleLanguage('es')" class="btn-toggle px-4 py-1.5 rounded-md text-sm font-bold">ES</button>
+            </div>
         </div>
-    </div>
+    </nav>
+
+    <!-- Animated Hero Section -->
+    <header class="hero-section py-20 sm:py-32">
+        <canvas id="network-canvas"></canvas>
+        <div class="hero-content max-w-6xl mx-auto px-6 grid md:grid-cols-12 gap-12 items-center">
+            
+            <div class="md:col-span-8 space-y-8 bg-white/60 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/40">
+                <div>
+                    <h1 class="text-5xl sm:text-6xl font-extrabold text-slate-900 tracking-tight mb-3">Diego Lainfiesta</h1>
+                    <p class="text-2xl text-blue-700 font-bold tracking-wide uppercase lang-en">Supply Chain & Digital Transformation Executive</p>
+                    <p class="text-2xl text-blue-700 font-bold tracking-wide uppercase lang-es" style="display: none;">Ejecutivo en Cadena de Suministro y Transformación Digital</p>
+                </div>
+                
+                <p class="text-lg text-slate-700 leading-relaxed font-medium lang-en">
+                    Strategic executive and engineer with nearly two decades of experience driving operational excellence. I specialize in leveraging <strong class="text-blue-900">data analytics, machine learning, and strategic planning</strong> to optimize complex, end-to-end supply chain networks. A catalyst for high-performance teams, I believe meticulous planning and data-driven insights are the cornerstones of sustainable business success.
+                </p>
+                <p class="text-lg text-slate-700 leading-relaxed font-medium lang-es" style="display: none;">
+                    Ejecutivo estratégico e ingeniero con casi dos décadas de experiencia impulsando la excelencia operativa. Me especializo en aprovechar <strong class="text-blue-900">el análisis de datos, machine learning y la planificación estratégica</strong> para optimizar redes complejas de suministro. Como catalizador de equipos de alto rendimiento, considero que la planificación meticulosa y las decisiones basadas en datos son los pilares del éxito empresarial sostenible.
+                </p>
+                
+                <div class="flex flex-wrap gap-6 pt-4 border-t border-slate-300/50">
+                    <a href="mailto:diegolainfiesta@gmail.com" class="group flex items-center text-slate-800 font-semibold hover:text-blue-700 transition-colors">
+                        <span class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i class="fas fa-envelope"></i></span>
+                        diegolainfiesta@gmail.com
+                    </a>
+                    <a href="https://linkedin.com/in/diego-lainfiesta" target="_blank" class="group flex items-center text-slate-800 font-semibold hover:text-blue-700 transition-colors">
+                        <span class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i class="fab fa-linkedin-in"></i></span>
+                        LinkedIn
+                    </a>
+                    <span class="flex items-center text-slate-800 font-semibold">
+                        <span class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3"><i class="fas fa-phone"></i></span>
+                        +502 4679 1350
+                    </span>
+                </div>
+            </div>
+
+            <!-- Profile Picture Area -->
+            <div class="hidden md:flex md:col-span-4 justify-center relative">
+                <div class="w-64 h-64 rounded-full bg-gradient-to-tr from-blue-700 to-blue-400 p-1 shadow-2xl relative z-10">
+                    <img src="profile.jpg" alt="Diego Lainfiesta" class="w-full h-full rounded-full object-cover">
+                </div>
+                <!-- Decorative background elements -->
+                <div class="absolute inset-0 bg-blue-400/20 rounded-full blur-3xl -z-10 scale-150"></div>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-20 space-y-24">
+        
+        <!-- Professional Experience -->
+        <section>
+            <div class="flex items-center mb-12">
+                <div class="w-12 h-12 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xl mr-4 shadow-sm">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    <span class="lang-en">Executive Experience</span>
+                    <span class="lang-es" style="display: none;">Experiencia Ejecutiva</span>
+                </h2>
+            </div>
+            
+            <div class="space-y-12 border-l-2 border-blue-100 ml-6 pl-8">
+                <!-- EPM -->
+                <div class="relative">
+                    <span class="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow"></span>
+                    <div class="md:flex justify-between items-baseline mb-2">
+                        <h3 class="text-2xl font-bold text-slate-900">EPM – Guatemala, GTM</h3>
+                        <span class="text-sm font-bold text-blue-700 uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-full">
+                            <span class="lang-en">Nov. 2024 - Present</span>
+                            <span class="lang-es" style="display: none;">Nov. 2024 - Actual</span>
+                        </span>
+                    </div>
+                    <div class="text-xl font-semibold text-slate-700 mb-4">
+                        <span class="lang-en">CEO AMESA & IDEAMSA | Supply and Services Manager</span>
+                        <span class="lang-es" style="display: none;">Gerente General AMESA & IDEAMSA | Gerente de Suministros y Servicios</span>
+                    </div>
+                    <p class="text-slate-600 leading-relaxed text-lg lang-en">
+                        Directing the strategic planning and execution of a <strong>$264M annual procurement budget</strong>. Negotiating high-stakes contracts to optimize costs and mitigate supply chain risks, while overseeing complex logistics centers and safeguarding critical enterprise assets. Reporting directly to the CEO and Board of Directors.
+                    </p>
+                    <p class="text-slate-600 leading-relaxed text-lg lang-es" style="display: none;">
+                        Dirección de la planificación estratégica y ejecución de un presupuesto anual de adquisiciones de <strong>$264 millones USD</strong>. Negociación de contratos de alto impacto para optimizar costos y mitigar riesgos en la cadena de suministro, supervisando centros logísticos complejos y salvaguardando activos empresariales críticos. Reporte directo al CEO y Junta Directiva.
+                    </p>
+                </div>
+
+                <!-- ROCHE -->
+                <div class="relative">
+                    <span class="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-slate-300 border-4 border-white shadow"></span>
+                    <div class="md:flex justify-between items-baseline mb-2">
+                        <h3 class="text-2xl font-bold text-slate-900">ROCHE – Mannheim, DEU</h3>
+                        <span class="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                            <span class="lang-en">Jun. 2018 - Nov. 2024</span>
+                            <span class="lang-es" style="display: none;">Jun. 2018 - Nov. 2024</span>
+                        </span>
+                    </div>
+                    <div class="text-xl font-semibold text-slate-700 mb-4">
+                        <span class="lang-en">Senior Project Lead | Data Analytics & Digital Transformation</span>
+                        <span class="lang-es" style="display: none;">Líder de Proyecto | Análisis de Datos y Transformación Digital</span>
+                    </div>
+                    <p class="text-slate-600 leading-relaxed text-lg lang-en">
+                        Architected and deployed advanced IT platforms to optimize end-to-end production, transportation, and inventory planning. Pioneered digital transformation initiatives, leveraging <strong>Machine Learning and AI</strong> to model econometric scenarios and drive global operational efficiency.
+                    </p>
+                    <p class="text-slate-600 leading-relaxed text-lg lang-es" style="display: none;">
+                        Diseño e implementación de plataformas informáticas avanzadas para optimizar la planificación de producción, transporte e inventario de extremo a extremo. Lideré iniciativas de transformación digital, aprovechando <strong>Machine Learning y la IA</strong> para modelar escenarios econométricos e impulsar la eficiencia operativa global.
+                    </p>
+                </div>
+
+                <!-- ENERGUATE -->
+                <div class="relative">
+                    <span class="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-slate-300 border-4 border-white shadow"></span>
+                    <div class="md:flex justify-between items-baseline mb-2">
+                        <h3 class="text-2xl font-bold text-slate-900">ENERGUATE – Guatemala, GTM</h3>
+                        <span class="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                            <span class="lang-en">Jul. 2008 - Aug. 2017</span>
+                            <span class="lang-es" style="display: none;">Jul. 2008 - Ago. 2017</span>
+                        </span>
+                    </div>
+                    <div class="text-xl font-semibold text-slate-700 mb-4">
+                        <span class="lang-en">Procurement, Logistics & HSEQ Manager</span>
+                        <span class="lang-es" style="display: none;">Gerente de Compras, Logística y HSEQ</span>
+                    </div>
+                    <p class="text-slate-600 leading-relaxed text-lg lang-en">
+                        Led multifaceted divisions encompassing procurement, logistics, and HSEQ standards for a massive operational network. Spearheaded transition plans that yielded millions in annual savings and significantly elevated contractor compliance and safety metrics.
+                    </p>
+                    <p class="text-slate-600 leading-relaxed text-lg lang-es" style="display: none;">
+                        Liderazgo de divisiones multifacéticas que abarcan adquisiciones, logística y estándares HSEQ. Encabecé planes de transición que generaron ahorros anuales millonarios y elevaron significativamente las métricas de seguridad y cumplimiento normativo.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid md:grid-cols-2 gap-16">
+            <!-- Education -->
+            <section>
+                <div class="flex items-center mb-8">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-lg mr-4 shadow-sm">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                        <span class="lang-en">Education</span>
+                        <span class="lang-es" style="display: none;">Formación Académica</span>
+                    </h2>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-xl text-slate-900">Master of Data Engineering</h3>
+                        <p class="text-blue-700 font-medium">Jacobs University, Germany</p>
+                        <p class="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">2017 - 2019</p>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-xl text-slate-900 lang-en">Master of Applied Economics & Business</h3>
+                        <h3 class="font-bold text-xl text-slate-900 lang-es" style="display: none;">Master en Economía Aplicada y Negocios</h3>
+                        <p class="text-blue-700 font-medium lang-en">Del Valle University, GTM & Texas A&M, USA</p>
+                        <p class="text-blue-700 font-medium lang-es" style="display: none;">Universidad del Valle, GTM & Texas A&M, USA</p>
+                        <p class="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">2015 - 2016</p>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-xl text-slate-900 lang-en">Master of Finance Administration</h3>
+                        <h3 class="font-bold text-xl text-slate-900 lang-es" style="display: none;">Master en Administración Financiera</h3>
+                        <p class="text-blue-700 font-medium">San Carlos University, Guatemala</p>
+                        <p class="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">2010 - 2012</p>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-xl text-slate-900 lang-en">B.S. Chemical Engineering</h3>
+                        <h3 class="font-bold text-xl text-slate-900 lang-es" style="display: none;">Ingeniería Química</h3>
+                        <p class="text-blue-700 font-medium">San Carlos University, Guatemala</p>
+                        <p class="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">2004 - 2008</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Skills -->
+            <section>
+                <div class="flex items-center mb-8">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-lg mr-4 shadow-sm">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                        <span class="lang-en">Core Competencies</span>
+                        <span class="lang-es" style="display: none;">Competencias Clave</span>
+                    </h2>
+                </div>
+                
+                <div class="bg-slate-50 p-8 rounded-xl border border-slate-200">
+                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Technical & Analytics</h4>
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">Python</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">R</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">Java</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">SQL</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">AWS</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">Snowflake</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">MLFlow</span>
+                        <span class="px-4 py-2 bg-white border border-slate-200 shadow-sm text-slate-800 rounded-md font-semibold">Airflow</span>
+                    </div>
+
+                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Management & Operations</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-4 py-2 bg-blue-600 text-white shadow-sm rounded-md font-semibold">Supply Chain Management</span>
+                        <span class="px-4 py-2 bg-blue-600 text-white shadow-sm rounded-md font-semibold">Strategic Planning</span>
+                        <span class="px-4 py-2 bg-blue-600 text-white shadow-sm rounded-md font-semibold">SAP MM&PP</span>
+                        <span class="px-4 py-2 bg-blue-600 text-white shadow-sm rounded-md font-semibold">Lean Six Sigma</span>
+                        <span class="px-4 py-2 bg-blue-600 text-white shadow-sm rounded-md font-semibold">HSEQ Standards</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t-4 border-blue-600 text-center">
+        <div class="max-w-6xl mx-auto px-6">
+            <h3 class="text-xl font-bold text-white mb-4">Diego Lainfiesta</h3>
+            <p class="mb-6">
+                <a href="mailto:diegolainfiesta@gmail.com" class="hover:text-white transition-colors">diegolainfiesta@gmail.com</a>
+                <span class="mx-2">|</span>
+                <a href="https://linkedin.com/in/diego-lainfiesta" target="_blank" class="hover:text-white transition-colors">LinkedIn</a>
+            </p>
+            <p class="text-sm opacity-60">© 2026 Diego Lainfiesta. <span class="lang-en">All rights reserved.</span><span class="lang-es" style="display: none;">Todos los derechos reservados.</span></p>
+        </div>
+    </footer>
+
 </body>
 </html>
