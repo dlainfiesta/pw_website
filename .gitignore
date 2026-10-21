@@ -1,6 +1,6 @@
 # Reference documents and resumes
 ref/
-*.pdf
+
 
 # OS generated files
 .DS_Store
